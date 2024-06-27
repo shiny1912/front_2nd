@@ -30,6 +30,10 @@ export const TestContextProvider = ({ children }) => {
   )
 }
 
+export const test = () => {
+  return true;
+}
+
 const useTestContext = () => {
   return useContext(TestContext);
 }
