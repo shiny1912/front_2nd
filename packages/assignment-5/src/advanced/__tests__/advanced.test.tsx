@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { describe, expect, test } from 'vitest';
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { beforeEach, describe, expect, test } from 'vitest';
+import { act, fireEvent, render, renderHook, screen, within } from '@testing-library/react';
 import { CartPage } from '../../refactoring/components/CartPage';
 import { AdminPage } from "../../refactoring/components/AdminPage";
-import { Coupon, Product } from '../../types';
+import { CartItem, Coupon, Product } from '../../types';
+import { getAppliedDiscount, getMaxApplicableDiscount, getMaxDiscount } from "../../refactoring/hooks/utils/discountUtils";
+import useLocalStorage from "../../refactoring/hooks/useLocalStorage";
+
 
 const mockProducts: Product[] = [
   {
@@ -79,7 +82,7 @@ describe('advanced > ', () => {
 
     test('장바구니 페이지 테스트 > ', async () => {
 
-      render(<CartPage products={mockProducts} coupons={mockCoupons}/>);
+      render(<CartPage products={mockProducts} coupons={mockCoupons} />);
       const product1 = screen.getByTestId('product-p1');
       const product2 = screen.getByTestId('product-p2');
       const product3 = screen.getByTestId('product-p3');
@@ -157,7 +160,7 @@ describe('advanced > ', () => {
     });
 
     test('관리자 페이지 테스트 > ', async () => {
-      render(<TestAdminPage/>);
+      render(<TestAdminPage />);
 
 
       const $product1 = screen.getByTestId('product-1');
@@ -230,15 +233,129 @@ describe('advanced > ', () => {
       expect($newCoupon).toHaveTextContent('새 쿠폰 (NEW10):10% 할인');
     })
   })
+  describe('discountUtils 테스트', () => {
+    test('가장 높은 할인율을 반환한다.', () => {
+      const mockCartItem: CartItem = {
+        quantity: 10,
+        product: {
+          discounts: [
+            { quantity: 5, rate: 5 },
+            { quantity: 10, rate: 10 },
+            { quantity: 15, rate: 15 },
+          ],
+          id: "",
+          name: "",
+          price: 0,
+          stock: 0
+        },
+      };
+      const result = getMaxApplicableDiscount(mockCartItem);
+      expect(result).toBe(10);
+    });
 
-  describe('자유롭게 작성해보세요.', () => {
-    test('새로운 유틸 함수를 만든 후에 테스트 코드를 작성해서 실행해보세요', () => {
-      expect(true).toBe(false);
-    })
+    test('할인할 수 없으면 0을 반환한다.', () => {
+      const mockCartItem: CartItem = {
+        quantity: 3,
+        product: {
+          discounts: [
+            { quantity: 5, rate: 5 },
+            { quantity: 10, rate: 10 },
+          ],
+          id: "",
+          name: "",
+          price: 0,
+          stock: 0
+        },
+      };
 
-    test('새로운 hook 함수르 만든 후에 테스트 코드를 작성해서 실행해보세요', () => {
-      expect(true).toBe(false);
-    })
-  })
+      const result = getMaxApplicableDiscount(mockCartItem);
+      expect(result).toBe(0);
+    });
+
+    test('빈 할인 배열을 반환할 수 있다.', () => {
+      const mockCartItem: CartItem = {
+        quantity: 10,
+        product: {
+          discounts: [],
+          id: "",
+          name: "",
+          price: 0,
+          stock: 0
+        },
+      };
+
+      const result = getMaxApplicableDiscount(mockCartItem);
+      expect(result).toBe(0);
+    });
+  });
+
 })
 
+describe('useLocalStorage', () => {
+  beforeEach(() => {
+    // 테스트 전 로컬 스토리지 초기화
+    window.localStorage.clear();
+  });
+
+  test('초기값이 없을 때 제공된 초기값을 사용해야 합니다', () => {
+    const { result } = renderHook(() => useLocalStorage('testKey', 'initialValue'));
+    expect(result.current[0]).toBe('initialValue');
+  });
+
+  test('localStorage에 값이 있을 때 그 값을 사용해야 합니다', () => {
+    window.localStorage.setItem('testKey', JSON.stringify('storedValue'));
+    const { result } = renderHook(() => useLocalStorage('testKey', 'initialValue'));
+    expect(result.current[0]).toBe('storedValue');
+  });
+
+  test('setValue 함수는 값을 업데이트하고 localStorage에 저장해야 합니다', () => {
+    const { result } = renderHook(() => useLocalStorage('testKey', 'initialValue'));
+    act(() => {
+      result.current[1]('newValue');
+    });
+    expect(result.current[0]).toBe('newValue');
+    expect(window.localStorage.getItem('testKey')).toBe(JSON.stringify('newValue'));
+  });
+
+  test('storage 이벤트 발생 시 값을 업데이트해야 합니다', () => {
+    const TestComponent = () => {
+      const [value, setValue] = useLocalStorage('testKey', 'initialValue');
+      return <div data-testid="value">{value}</div>;
+    };
+
+    const { getByTestId } = render(<TestComponent />);
+
+    expect(getByTestId('value').textContent).toBe('initialValue');
+
+    act(() => {
+      window.localStorage.setItem('testKey', JSON.stringify('updatedValue'));
+      fireEvent(window, new Event('storage'));
+    });
+
+    expect(getByTestId('value').textContent).toBe('updatedValue');
+  });
+});
+
+describe('getMaxDiscount', () => {
+  test('빈 배열일 때 0을 반환해야 합니다', () => {
+    expect(getMaxDiscount([])).toBe(0);
+  });
+
+  test('할인율 중 최대값을 반환해야 합니다', () => {
+    const discounts = [
+      { rate: 10, quantity: 2 },
+      { rate: 20, quantity: 3 },
+      { rate: 15, quantity: 4 },
+    ];
+    expect(getMaxDiscount(discounts)).toBe(20);
+  });
+
+  test('음수 할인율이 있을 때도 최대값을 정확히 반환해야 합니다', () => {
+    const discounts = [
+      { rate: -5, quantity: 1 },
+      { rate: 10, quantity: 2 },
+      { rate: 0, quantity: 3 },
+    ];
+    expect(getMaxDiscount(discounts)).toBe(10);
+  });
+});
