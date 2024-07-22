@@ -26,6 +26,11 @@ jobs:
       - name: assignment-6-basic
         run: |
           pnpm install
+      - name: tsc 실행 및 build
+        run: 
+          npx tsc
+          npm run build
+        continue-on-error: true 
 
   lint:
     runs-on: ubuntu-latest
