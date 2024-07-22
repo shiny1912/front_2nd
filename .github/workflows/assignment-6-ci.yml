@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 20
           cache: 'pnpm'
-      - name: assignment-5-basic
+      - name: assignment-6-basic
         run: |
           pnpm install
 
