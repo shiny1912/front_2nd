@@ -4,8 +4,6 @@ on:
   pull_request:
     types:
       - opened
-    paths:
-      - 'packages/assignment-6/**'
   push:
     branches:
       - "**"
