@@ -6,13 +6,15 @@ on:
       - opened
     paths:
       - 'packages/assignment-6/**'
+  push:
+    branches:
+      - "**"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: job1 구현
-        run: echo "job1의 내용을 구현해주세요"
         run: |
           cd packages/assignment-6
           npx tsc
