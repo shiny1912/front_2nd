@@ -7,10 +7,6 @@ on:
       - synchronize
     paths:
       - 'packages/assignment-6/**'
-  push:
-    branches:
-      - "**"
-
 jobs:
   build:
     runs-on: ubuntu-latest
