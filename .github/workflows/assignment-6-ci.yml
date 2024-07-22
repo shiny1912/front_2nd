@@ -14,7 +14,6 @@ jobs:
     steps:
       - name: job1 구현
         run: |
-          cd packages/assignment-6
           npx tsc
           npm run build
       - name: Run TypeScript compiler and Build
