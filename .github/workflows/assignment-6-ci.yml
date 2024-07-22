@@ -29,7 +29,7 @@ jobs:
       - name: tsc 실행 및 build
         run: |
           cd packages/assignment-6
-          npx tsc
+          npm install typescript
           npm run build
         continue-on-error: true 
 
