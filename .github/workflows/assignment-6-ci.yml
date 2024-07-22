@@ -13,10 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: job1 구현
-        run: |
-          npx tsc
-          npm run build
-      - name: Run TypeScript compiler and Build
         id: build
         run: |
           output=$(npx tsc 2>&1 && npm run build 2>&1) || echo "::set-output name=error::$output"
@@ -27,7 +23,6 @@ jobs:
           script: |
             const output = `${{ steps.build.outputs.error }}`;
             github.rest.issues.createComment({
-              issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `TypeScript 컴파일 또는 빌드 과정에서 오류가 발생했습니다:\n\n\`\`\`\n${output}\n\`\`\``})
