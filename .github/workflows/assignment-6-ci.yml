@@ -63,7 +63,7 @@ jobs:
         uses: actions/github-script@v6
         if: steps.eslint.outputs.eslint_exit_code != '0'
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{secrets.TOKEN_FOR_CI}}
           script: |
             const fs = require('fs')
             const eslintReport = fs.readFileSync('eslint_report.txt', 'utf8')
