@@ -2,19 +2,25 @@ name: CI Assignment 6
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [synchronize, opened]
     paths:
-      - 'packages/assignment-6/**'
-
-env:
-  GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_CI }}
-  
+      - "packages/assignment-6/**"
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: job1 구현
-        run: echo "job1의 내용을 구현해주세요"
+    - name: job1 구현 -  tsc, build 를 실행한다. 오류가 발생하면 코멘트를 남긴다.
+      uses: actions/checkout@v2
+
+    - name: Use Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: "20.x"
+
+    - name: Run tsc and build
+      id: build
+      run: npm run build
+      working-directory: packages/assignment-6
 
   lint:
     runs-on: ubuntu-latest
