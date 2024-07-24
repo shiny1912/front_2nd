@@ -71,7 +71,7 @@ jobs:
             const fs = require('fs')
             const eslintReport = fs.readFileSync('lint.log', 'utf8')
             github.rest.issues.createComment({
-              body: 'ESLint 검사 결과:\n```\n' + eslintReport + '\n```'
+              body: 'ESLint 검사 결과:\n```\n' + lint.log + '\n```'
             })  
 
   test:
