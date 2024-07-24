@@ -75,7 +75,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: 'ESLint 검사 결과:\n```\n' + ${eslintReport} + '\n```'
+              body: 'ESLint 검사 결과:\n```\n' + eslintReport + '\n```'
             })  
 
   test:
