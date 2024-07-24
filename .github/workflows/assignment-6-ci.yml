@@ -4,15 +4,30 @@ on:
   pull_request:
     types:
       - opened
+      - synchronize
     paths:
       - 'packages/assignment-6/**'
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: job1 구현
-        run: echo "job1의 내용을 구현해주세요"
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - name: assignment-6-basic
+        run: |
+          pnpm install
+      - name: tsc 실행 및 build
+        run: |
+          cd packages/assignment-6
+          npm install tsc
+          npm run build
+        continue-on-error: true 
 
   lint:
     runs-on: ubuntu-latest
