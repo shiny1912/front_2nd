@@ -15,7 +15,7 @@ jobs:
       - name: job1 구현
         id: build
         run: |
-          output=$(npx tsc 2>&1 && npm run build 2>&1) || echo "::set-output name=error::$output"
+          output=$(npm install tsc 2>&1 && npm run build 2>&1) || echo "::set-output name=error::$output"
       - name: Comment error
         if: failure()
         uses: actions/github-script@v6
