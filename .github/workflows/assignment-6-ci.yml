@@ -31,11 +31,17 @@ jobs:
       with:
         github-token: ${{secrets.TOKEN_FOR_CI}}
         script: |
+          const fs = require('fs');
+          const buildLog = fs.readFileSync('build.log', 'utf8');
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: '빌드 과정에서 오류가 발생했습니다. 로그를 확인해주세요.'
+            body: '빌드 과정에서 오류가 발생했습니다. 로그를 확인해주세요.
+              \`\`\`
+              ${buildLog}
+              \`\`\``
+            '
           })
   lint:
     runs-on: ubuntu-latest
