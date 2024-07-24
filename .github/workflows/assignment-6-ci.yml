@@ -5,6 +5,9 @@ on:
     types: [synchronize, opened]
     paths:
       - "**"
+permissions:
+  pull-requests: write
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
