@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [synchronize, opened]
     paths:
-      - "packages/assignment-6/**"
+      - "**"
 jobs:
   build:
     runs-on: ubuntu-latest
