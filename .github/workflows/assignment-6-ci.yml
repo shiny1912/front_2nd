@@ -24,7 +24,9 @@ jobs:
       - name: Run build
         id: build
         run: |
-          pnpm -F assignment-6 build 
+          pnpm -F assignment-6 build > build.log 2>&1
+          exit_code=$?
+          echo "build_exit_code=$exit_code" >> $GITHUB_OUTPUT
   lint:
     runs-on: ubuntu-latest
     steps:
