@@ -61,17 +61,18 @@ jobs:
         run: |
           pnpm -F assignment-6 lint > lint.log 2>&1 || true
           echo "eslint_exit_code=$?" >> $GITHUB_OUTPUT
+          cat eslint_report.txt
       
       - name: Comment PR
+        if: failure()
         uses: actions/github-script@v6
-        if: steps.eslint.outputs.eslint_exit_code != '0'
         with:
           github-token: ${{secrets.TOKEN_FOR_CI}}
           script: |
             const fs = require('fs')
             const eslintReport = fs.readFileSync('lint.log', 'utf8')
             github.rest.issues.createComment({
-              body: 'ESLint 검사 결과:\n```\n' + lint.log + '\n```'
+              body: 'ESLint 검사 결과:\n```\n' + ${eslintReport} + '\n```'
             })  
 
   test:
