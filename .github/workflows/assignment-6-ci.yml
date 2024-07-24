@@ -2,13 +2,13 @@ name: CI Assignment 6
 
 on:
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
+    types: [opened, synchronize]
     paths:
       - 'packages/assignment-6/**'
 
+env:
+  GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_CI }}
+  
 jobs:
   build:
     runs-on: ubuntu-latest
