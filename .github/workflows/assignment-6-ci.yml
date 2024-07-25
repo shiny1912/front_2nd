@@ -163,38 +163,37 @@ jobs:
           github-token: ${{secrets.TOKEN_FOR_CI}}
           script: |
             const fs = require('fs');
-            const lighthouseReport = JSON.parse(fs.readFileSync("packages/assignment-6/lhci_reports/manifest.json", 'utf-8'))
+            const results = JSON.parse(fs.readFileSync("packages/assignment-6/lhci_reports/manifest.json", 'utf-8'));
+            let comments = "";
             function getScoreEmoji(score) {
               if (score >= 90) return '🟢';
               if (score >= 50) return '🟠';
-            return '🔴';
-            }
-      
-            function formatScore(category) {
-              const score = Math.round(category.score * 100);
-              return `${getScoreEmoji(score)} ${category.title}: ${score}`;
-            }
+              return '🔴';
+            }      
 
-            const scoreTable = Object.values(lighthouseReport.categories)
-              .map(formatScore)
-              .join('\n');
-
-            const reportUrl = lighthouseReport.finalUrl;
-
-            const comment = `
-            ## Lighthouse Results
-
-            ${scoreTable}
-
-            [Detailed Lighthouse Report](${reportUrl})
-            `;
-
+            results.forEach((result) => {
+              const { summary, jsonPath } = result;
+              const details = JSON.parse(fs.readFileSync(jsonPath));
+              const { audits } = details;
+              const formatResult = (res) => Math.round(res * 100);
+              Object.keys(summary).forEach(
+                (key) => (summary[key] = formatResult(summary[key]))
+              );
+              const score = getScoreEmoji(res);
+              comments = `
+              ## Lighthouse Report
+              ${score(summary.performance)} Performance | ${summary.performance} 
+              ${score(summary.accessibility)} Accessibility | ${summary.accessibility} 
+              ${score(summary['best-practices'])} Best Practices | ${summary['best-practices']} 
+              ${score(summary.seo)} SEO | ${summary.seo} 
+              `;
+            })
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Lighthouse CI Results:\n```\n' + results + '\n```\n\nFull report: '
-            })
+              body: comments,
+            });
 
   assign_reviewer:
     runs-on: ubuntu-latest
