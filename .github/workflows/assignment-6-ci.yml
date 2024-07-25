@@ -37,11 +37,7 @@ jobs:
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: '빌드 과정에서 오류가 발생했습니다. 로그를 확인해주세요.
-              \`\`\`
-              ${buildLog}
-              \`\`\``
-            '
+            body: '빌드 과정에서 오류가 발생했습니다. 로그를 확인해주세요.'
           })
   lint:
     runs-on: ubuntu-latest
@@ -65,7 +61,7 @@ jobs:
       - name: Run ESLint
         id: eslint
         run: |
-          pnpm -F assignment-6 lint > lint.log 2>&1 || true
+          pnpm -F assignment-6 lint 2>&1 | tee lint.log
           echo "eslint_exit_code=$?" >> $GITHUB_OUTPUT
           cat eslint_report.txt
       
@@ -76,7 +72,7 @@ jobs:
           github-token: ${{secrets.TOKEN_FOR_CI}}
           script: |
             const fs = require('fs')
-            const eslintReport = fs.readFileSync('eslint_report.txt', 'utf8')
+            const eslintReport = fs.readFileSync('lint.log', 'utf8')
             github.rest.issues.createComment({
            
               body: 'ESLint 검사 결과:\n```\n ${eslintReport}\n```'
