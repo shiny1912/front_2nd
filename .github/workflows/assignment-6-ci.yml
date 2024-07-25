@@ -80,60 +80,60 @@ jobs:
               body: 'ESLint 검사 결과:\n```\n' + eslintReport + '\n```'
             })  
 
-            test:
-              runs-on: ubuntu-latest
-              steps:
-                - uses: actions/checkout@v4
-          
-                - name: Read .nvmrc
-                  id: node_version
-                  run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
-          
-                - name: Use Node.js
-                  uses: actions/setup-node@v4
-                  with:
-                    node-version: 20
-          
-                - name: Install pnpm
-                  uses: pnpm/action-setup@v4
-                  with:
-                    version: 9.5.0
-          
-                - name: Install dependencies
-                  run: pnpm install
-          
-                - name: Run tests
-                  run: pnpm -F assignment-6 test:coverage
-          
-                - name: test pwd
-                  run: pwd
-          
-                - name: Comment test results
-                  if: success()
-                  uses: actions/github-script@v6
-                  with:
-                    github-token: ${{secrets.TOKEN_FOR_CI}}
-                    script: |
-                      const fs = require('fs');
-                      const path = require('path');
-                      
-                      const coverageJson = JSON.parse(fs.readFileSync(`packages/assignment-6/coverage/coverage-summary.json`, 'utf8'));
-                      
-                      const {lines, branches, functions, statements} = coverageJson.total;
-                      
-                      
-                      github.rest.issues.createComment({
-                        issue_number: context.issue.number,
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        body: `## 테스트 성공✅ 
-                        \n ### 커버리지 결과 \n
-                      
-                        • 라인 커버리지: ${lines.pct}%
-                        • 브랜치 커버리지: ${branches.pct}%
-                        • 함수 커버리지: ${functions.pct}%
-                        • 구문 커버리지: ${statements.pct}%
-                      `})
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read .nvmrc
+        id: node_version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.5.0
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run tests
+        run: pnpm -F assignment-6 test:coverage
+
+      - name: test pwd
+        run: pwd
+
+      - name: Comment test results
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.TOKEN_FOR_CI}}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            const coverageJson = JSON.parse(fs.readFileSync(`packages/assignment-6/coverage/coverage-summary.json`, 'utf8'));
+            
+            const {lines, branches, functions, statements} = coverageJson.total;
+            
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 테스트 성공✅ 
+              \n ### 커버리지 결과 \n
+            
+              • 라인 커버리지: ${lines.pct}%
+              • 브랜치 커버리지: ${branches.pct}%
+              • 함수 커버리지: ${functions.pct}%
+              • 구문 커버리지: ${statements.pct}%
+            `})
 
   lighthouse:
     runs-on: ubuntu-latest
