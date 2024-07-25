@@ -169,7 +169,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Lighthouse CI Results:\n```\n' + results + '\n```\n\nFull report: ' + 
+              body: 'Lighthouse CI Results:\n```\n' + results + '\n```\n\nFull report: '
             })
 
   assign_reviewer:
