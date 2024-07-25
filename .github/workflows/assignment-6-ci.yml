@@ -174,7 +174,7 @@ jobs:
             comment += '| Run | Performance | Accessibility | Best Practices | SEO |\n';
             comment += '|-----|-------------|---------------|----------------|-----|\n';
                     
-            results.forEach((result, index) => {
+            summaries.forEach((result, index) => {
               comment += `| ${index + 1} | ${getScoreEmoji(result.performance)} ${formatScore(result.performance)} | ${getScoreEmoji(result.accessibility)} ${formatScore(result.accessibility)} | ${getScoreEmoji(result['best-practices'])} ${formatScore(result['best-practices'])} | ${getScoreEmoji(result.seo)} ${formatScore(result.seo)} |\n`;
             });
 
