@@ -163,31 +163,36 @@ jobs:
           github-token: ${{secrets.TOKEN_FOR_CI}}
           script: |
             const fs = require('fs');
-            const results = JSON.parse(fs.readFileSync("packages/assignment-6/lhci_reports/manifest.json", 'utf-8'));
-            let comments = "";
-            function getScoreEmoji(score) {
-              if (score >= 90) return '🟢';
-              if (score >= 50) return '🟠';
-              return '🔴';
-            }      
 
-            results.forEach((result) => {
-              const { summary, jsonPath } = result;
+            const getScoreEmoji = (score) => score >= 90 ? '🟢' : score >= 50 ? '🟠' : '🔴';
+
+            const formatResult = (res) => Math.round(res * 100);
+
+            const generateLighthouseReport = () => {
+            const manifestPath = "packages/assignment-6/lhci_reports/manifest.json";
+            const results = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+
+            return results.map((result) => {
+              const jsonPath = `packages/assignment-6/lhci_reports/${result.jsonPath}`;
               const details = JSON.parse(fs.readFileSync(jsonPath));
-              const { audits } = details;
-              const formatResult = (res) => Math.round(res * 100);
-              Object.keys(summary).forEach(
-                (key) => (summary[key] = formatResult(summary[key]))
+
+              const summary = Object.fromEntries(
+                Object.entries(result).map(([key, value]) => [key, formatResult(value)])
               );
-              const score = getScoreEmoji(res);
-              comments = `
-              ## Lighthouse Report
-              ${score(summary.performance)} Performance | ${summary.performance} 
-              ${score(summary.accessibility)} Accessibility | ${summary.accessibility} 
-              ${score(summary['best-practices'])} Best Practices | ${summary['best-practices']} 
-              ${score(summary.seo)} SEO | ${summary.seo} 
-              `;
-            })
+
+              const reportLines = [
+                '## Lighthouse Report',
+                `${getScoreEmoji(summary.performance)} Performance | ${summary.performance}`,
+                `${getScoreEmoji(summary.accessibility)} Accessibility | ${summary.accessibility}`,
+                `${getScoreEmoji(summary['best-practices'])} Best Practices | ${summary['best-practices']}`,
+                `${getScoreEmoji(summary.seo)} SEO | ${summary.seo}`
+              ];
+
+              return reportLines.join('\n');
+              }).join('\n\n');
+            };
+
+            const comments = generateLighthouseReport();
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
