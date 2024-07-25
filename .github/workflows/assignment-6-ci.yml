@@ -175,7 +175,7 @@ jobs:
             comment += '|-----|-------------|---------------|----------------|-----|\n';
                     
             results.forEach((result, index) => {
-              comment += `| ${index + 1} | ${getScoreEmoji(result.performance)} ${formatScore(result.performance)} | ${getScoreEmoji(result.accessibility)} ${formatScore(result.accessibility)} | ${getScoreEmoji(result['best-practices'])} ${formatScore(result['best-practices'])} | ${getScoreEmoji(result.seo)} ${formatScore(result.seo)} |\n`;
+              comment += `| ${index + 1} | ${getScoreEmoji(result.performance)} ${formatResult(result.performance)} | ${getScoreEmoji(result.accessibility)} ${formatResult(result.accessibility)} | ${getScoreEmoji(result['best-practices'])} ${formatResult(result['best-practices'])} | ${getScoreEmoji(result.seo)} ${formatResult(result.seo)} |\n`;
             });
 
             github.rest.issues.createComment({
