@@ -169,9 +169,8 @@ jobs:
             const formatResult = (res) => Math.round(res * 100);
 
             const generateLighthouseReport = () => {
-            const manifestPath = "packages/assignment-6/lhci_reports/manifest.json";
-            const results = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-
+            const results = JSON.parse(fs.readFileSync("packages/assignment-6/lhci_reports/manifest.json", 'utf-8'));
+            
             return results.map((result) => {
               const jsonPath = `packages/assignment-6/lhci_reports/${result.jsonPath}`;
               const details = JSON.parse(fs.readFileSync(jsonPath));
