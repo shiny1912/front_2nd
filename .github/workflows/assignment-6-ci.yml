@@ -62,7 +62,7 @@ jobs:
         id: eslint
         run: |
           pnpm -F assignment-6 lint 2>&1 | tee lint.log
-          echo "eslint_exit_code=$?" >> $GITHUB_OUTPUT
+          echo "eslint_exit_code=$?" >> $GITHUB_ENV
           cat eslint_report.txt
       
       - name: Comment PR
@@ -75,7 +75,7 @@ jobs:
             const eslintReport = fs.readFileSync('lint.log', 'utf8')
             github.rest.issues.createComment({
            
-              body: 'ESLint 검사 결과:\n```\n ${eslintReport}\n```'
+              body: 'ESLint 검사 결과:\n```\n'+eslintReport+'\n```'
             })  
 
   test:
