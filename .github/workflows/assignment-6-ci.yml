@@ -127,7 +127,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `## 테스트 성공✅ 
-              \n ### 커버리지 결과 \n
+              \n ### 커버리지 \n
             
               • 라인 커버리지: ${lines.pct}%
               • 브랜치 커버리지: ${branches.pct}%
