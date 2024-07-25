@@ -151,10 +151,7 @@ jobs:
       
       - name: Install dependencies
         run: pnpm install
-      
-      - name: Build project
-        run: pnpm -F assignment-6 build
-      
+            
       - name: Run Lighthouse CI
         id: lighthouse
         run: |
