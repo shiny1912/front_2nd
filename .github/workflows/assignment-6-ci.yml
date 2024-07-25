@@ -168,35 +168,15 @@ jobs:
 
             const formatResult = (res) => Math.round(res * 100);
 
-            const generateLighthouseReport = () => {
-            const results = JSON.parse(fs.readFileSync("packages/assignment-6/lhci_reports/manifest.json", 'utf-8'));
+            const results = JSON.parse(fs.readFileSync("packages/assignment-6/lhci_reports/manifest.json", 'utf-8'))
             
-            return results.map((result) => {
-              const jsonPath = `packages/assignment-6/lhci_reports/${result.jsonPath}`;
-              const details = JSON.parse(fs.readFileSync(jsonPath));
+            const summaries = results.map(({ summary }) => summary);
 
-              const summary = Object.fromEntries(
-                Object.entries(result).map(([key, value]) => [key, formatResult(value)])
-              );
-
-              const reportLines = [
-                '## Lighthouse Report',
-                `${getScoreEmoji(summary.performance)} Performance | ${summary.performance}`,
-                `${getScoreEmoji(summary.accessibility)} Accessibility | ${summary.accessibility}`,
-                `${getScoreEmoji(summary['best-practices'])} Best Practices | ${summary['best-practices']}`,
-                `${getScoreEmoji(summary.seo)} SEO | ${summary.seo}`
-              ];
-
-              return reportLines.join('\n');
-              }).join('\n\n');
-            };
-
-            const comments = generateLighthouseReport();
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: comments,
+              body: summaries,
             });
 
   assign_reviewer:
