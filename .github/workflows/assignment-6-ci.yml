@@ -158,8 +158,7 @@ jobs:
       - name: Run Lighthouse CI
         id: lighthouse
         run: |
-          npm install -g @lhci/cli@0.13.x
-          lhci autorun --upload.target=temporary-public-storage --collect.staticDistDir=./packages/assignment-6/dist > lighthouse_report.txt
+          pnpm -F assignment-6 lhci | tee lighthouse_report.txt
           echo "lhci_results<<EOF" >> $GITHUB_OUTPUT
           cat lighthouse_report.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -174,6 +173,8 @@ jobs:
             const reportLines = lighthouseReport.split('\n');
             const scoreLines = reportLines.filter(line => line.includes('| '));
             const formattedReport = scoreLines.join('\n');
+
+            const links = reportLines.find(line => line.includes('https://storage.googleapis.com'));
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,

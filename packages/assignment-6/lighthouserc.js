@@ -1,10 +1,12 @@
 module.exports = {
     ci: {
         collect: {
-            staticDistDir: './packages/assignment-6/dist',
+            startServerCommand: "pnpm -F assignment-6 start",
+            url: ["http://localhost:5173/"]
         },
         upload: {
-            target: 'temporary-public-storage',
+            target: "filesystem",
+            outputDir: "./lhci_reports",
         },
     },
 };
