@@ -101,7 +101,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-             pnpm add -D @vitest/coverage-v8
 
       - name: Run tests
         run: pnpm -F assignment-6 test:coverage
