@@ -172,26 +172,26 @@ jobs:
             
             const summaries = results.map(({ summary }) => summary);
 
+            let results = '## Lighthouse Results\n\n';
+            results += '| Run | Performance | Accessibility | Best Practices | SEO |\n';
+            results += '|-----|-------------|---------------|----------------|-----|\n';
+                    
+            results.forEach((result, index) => {
+              results += `| ${index + 1} | ${getScoreEmoji(result.performance)} ${formatScore(result.performance)} | ${getScoreEmoji(result.accessibility)} ${formatScore(result.accessibility)} | ${getScoreEmoji(result['best-practices'])} ${formatScore(result['best-practices'])} | ${getScoreEmoji(result.seo)} ${formatScore(result.seo)} |\n`;
+            });
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: summaries,
+              body: results,
             });
 
   assign_reviewer:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4      
-      - name: Auto Assign Reviewers
-        uses: kentaro-m/auto-assign-action@v1.2.5
+      - name: Auto Assign Reviewer
+        uses: hkusu/review-assign-action@v1
         with:
-          repo-token: "${{ secrets.TOKEN_FOR_CI }}"
-          configuration: |
-            addReviewers: true
-            reviewers:
-              - shiny1912
-            numberOfReviewers: 1
-            addAssignees: author
-            addLabels:
-              - awaiting-review
+          github-token: ${{ secrets.TOKEN_FOR_CI }}
+          reviewers: shiny1912
