@@ -182,5 +182,16 @@ jobs:
   assign_reviewer:
     runs-on: ubuntu-latest
     steps:
-      - name: job5 구현
-        run: echo "job5의 내용을 구현해주세요"
+      - uses: actions/checkout@v4      
+      - name: Auto Assign Reviewers
+        uses: kentaro-m/auto-assign-action@v1.2.5
+        with:
+          repo-token: "${{ secrets.TOKEN_FOR_CI }}"
+          configuration: |
+            addReviewers: true
+            reviewers:
+              - shiny1912
+            numberOfReviewers: 1
+            addAssignees: author
+            addLabels:
+              - awaiting-review
