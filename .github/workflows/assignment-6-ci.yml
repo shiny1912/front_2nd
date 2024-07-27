@@ -2,38 +2,195 @@ name: CI Assignment 6
 
 on:
   pull_request:
-    types:
-      - opened
+    types: [synchronize, opened]
     paths:
-      - 'packages/assignment-6/**'
-
+      - "**"
+permissions:
+  pull-requests: write
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: job1 구현
-        run: echo "job1의 내용을 구현해주세요"
-
+    - uses: actions/checkout@v3
+    - uses: pnpm/action-setup@v4
+      with:
+        version: latest
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - name: Install dependencies
+      run: pnpm -F assignment-6 install
+    - name: Run tsc and build
+      run: |
+        pnpm -F assignment-6 run tsc
+        pnpm -F assignment-6 run build
+    - name: Comment on PR if build fails
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{secrets.TOKEN_FOR_CI}}
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '빌드 과정에서 오류가 발생했습니다. 로그를 확인해주세요.'
+          })
   lint:
     runs-on: ubuntu-latest
     steps:
       - name: job2 구현
         run: echo "job2의 내용을 구현해주세요"
+      - uses: actions/checkout@v4
+    
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+      
+      - name: Install dependencies
+        run: pnpm install
+      
+      - name: Run ESLint
+        id: eslint
+        run: |
+          pnpm -F assignment-6 lint > lint.log 2>&1 || true
+          echo "eslint_exit_code=$?" >> $GITHUB_OUTPUT
+          cat eslint_report.txt
+      
+      - name: Comment PR
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.TOKEN_FOR_CI}}
+          script: |
+            const fs = require('fs')
+            const eslintReport = fs.readFileSync('lint.log', 'utf8')
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: 'ESLint 검사 결과:\n```\n' + eslintReport + '\n```'
+            })  
 
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: job3 구현
-        run: echo "job3의 내용을 구현해주세요"
+      - uses: actions/checkout@v4
+
+      - name: Read .nvmrc
+        id: node_version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.5.0
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run tests
+        run: pnpm -F assignment-6 test:coverage
+
+      - name: test pwd
+        run: pwd
+
+      - name: Comment test results
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.TOKEN_FOR_CI}}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            const coverageJson = JSON.parse(fs.readFileSync(`packages/assignment-6/coverage/coverage-summary.json`, 'utf8'));
+            
+            const {lines, branches, functions, statements} = coverageJson.total;
+            
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 테스트 성공✅ 
+              \n ### 커버리지 \n
+            
+              • 라인 커버리지: ${lines.pct}%
+              • 브랜치 커버리지: ${branches.pct}%
+              • 함수 커버리지: ${functions.pct}%
+              • 구문 커버리지: ${statements.pct}%
+            `})
 
   lighthouse:
     runs-on: ubuntu-latest
     steps:
-      - name: job4 구현
-        run: echo "job4의 내용을 구현해주세요"
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+      
+      - name: Install dependencies
+        run: pnpm install
+            
+      - name: Run Lighthouse CI
+        run: pnpm -F assignment-6 lhci
+        
+      - name: Comment PR with Lighthouse results
+        uses: actions/github-script@v6
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.TOKEN_FOR_CI }}
+        with:
+          github-token: ${{secrets.TOKEN_FOR_CI}}
+          script: |
+            const fs = require('fs');
+
+            const getScoreEmoji = (score) => score >= 90 ? '🟢' : score >= 50 ? '🟠' : '🔴';
+
+            const formatScore = (score) => (score * 100).toFixed(0);
+
+            const results = JSON.parse(fs.readFileSync("packages/assignment-6/lhci_reports/manifest.json", 'utf-8'))
+            
+            const summaries = results.map(({ summary }) => summary);
+
+            let comment = '## Lighthouse Results\n\n';
+            comment += '| Run | Performance | Accessibility | Best Practices | SEO |\n';
+            comment += '|-----|-------------|---------------|----------------|-----|\n';
+                    
+            summaries.forEach((result, index) => {
+              comment += `| ${index + 1} | ${getScoreEmoji(formatScore(result.performance))} ${formatScore(result.performance)} | ${getScoreEmoji(formatScore(result.accessibility))} ${formatScore(result.accessibility)} 
+              | ${getScoreEmoji(formatScore(result['best-practices']))} ${formatScore(result['best-practices'])} | ${getScoreEmoji(formatScore(result.seo))} ${formatScore(result.seo)} |\n`;
+            });
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment,
+            });
 
   assign_reviewer:
     runs-on: ubuntu-latest
     steps:
-      - name: job5 구현
-        run: echo "job5의 내용을 구현해주세요"
+      - name: Auto Assign Reviewer
+        uses: hkusu/review-assign-action@v1
+        with:
+          github-token: ${{ secrets.TOKEN_FOR_CI }}
+          reviewers: shiny1912
